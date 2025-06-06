@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "fir-96-b0056"
+  },
+  "targets": {
+    "fir-96-b0056": {
+      "hosting": {
+        "newfirebase": [
+          "diabobofirebasesite"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
