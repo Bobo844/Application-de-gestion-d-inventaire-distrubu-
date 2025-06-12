@@ -5,25 +5,31 @@ class SupplierOrder {
 
   static const String STATUS_DRAFT = 'draft'; // Brouillon
   static const String STATUS_PENDING = 'pending'; // En attente
-  static const String STATUS_RECEIVED = 'received'; // Reçue
+  static const String STATUS_APPROVED = 'approved';
+  static const String STATUS_REJECTED = 'rejected';
+  static const String STATUS_COMPLETED = 'completed';
   static const String STATUS_CANCELLED = 'cancelled'; // Annulée
 
   static Map<String, dynamic> createOrder({
-    required String reference,
     required String supplierId,
     required List<Map<String, dynamic>> products,
-    required double total,
-    String? deliveryDate,
+    String? reference,
+    DateTime? deliveryDate,
   }) {
     final order = {
       'id': DateTime.now().toString(),
-      'reference': reference,
+      'reference': reference ?? 'CMD${DateTime.now().millisecondsSinceEpoch}',
       'supplierId': supplierId,
+      'products': products,
       'date': DateTime.now().toIso8601String(),
       'status': STATUS_DRAFT,
-      'products': products,
-      'total': total,
-      'deliveryDate': deliveryDate,
+      'total': products.fold(
+          0.0,
+          (sum, product) =>
+              sum +
+              ((product['quantity'] as num? ?? 0) *
+                  ((product['price'] as num?)?.toDouble() ?? 0.0))),
+      'deliveryDate': deliveryDate?.toIso8601String(),
       'lastUpdate': DateTime.now().toIso8601String(),
     };
     orders.add(order);
@@ -37,7 +43,7 @@ class SupplierOrder {
       orders[index]['lastUpdate'] = DateTime.now().toIso8601String();
 
       // Si la commande est reçue, mettre à jour les stocks
-      if (newStatus == STATUS_RECEIVED) {
+      if (newStatus == STATUS_COMPLETED) {
         final products =
             orders[index]['products'] as List<Map<String, dynamic>>;
         for (var product in products) {
@@ -46,12 +52,27 @@ class SupplierOrder {
             (stock) => stock['productName'] == product['productName'],
           );
           if (stockIndex != -1) {
-            Stock.stockMovements[stockIndex]['quantity'] +=
-                product['quantity'] as int;
+            Stock.stockMovements[stockIndex]['quantity'] =
+                ((Stock.stockMovements[stockIndex]['quantity'] as num?) ?? 0) +
+                    ((product['quantity'] as num?) ?? 0);
             Stock.stockMovements[stockIndex]['lastUpdate'] =
                 DateTime.now().toIso8601String();
           }
         }
+      }
+    }
+  }
+
+  static void addReceivedStock(String orderId) {
+    final order = orders.firstWhere((o) => o['id'] == orderId);
+    if (order['status'] == STATUS_COMPLETED) {
+      for (var product
+          in (order['products'] as List).cast<Map<String, dynamic>>()) {
+        // Assurez-vous que la quantité est un nombre et non nulle
+        final quantityToAdd = (product['quantity'] as num? ?? 0).toInt();
+
+        // Logique pour ajouter le stock au magasin approprié (à implémenter si ce n'est pas déjà fait)
+        // Par exemple, vous devrez trouver le magasin destinataire et mettre à jour son stock
       }
     }
   }

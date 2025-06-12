@@ -323,7 +323,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.store),
+                  leading: const Icon(Icons.storefront),
                   title: const Text('Gestion des magasins'),
                   onTap: () {
                     Navigator.pop(context);
@@ -346,6 +346,62 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     );
                   },
                 ),
+                // Notifications for admin
+                if (isAdmin && SystemNotification.notifications.isNotEmpty) ...[
+                  const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Text(
+                      'Notifications',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                  ...SystemNotification.notifications.map((notification) {
+                    return ListTile(
+                      leading: const Icon(Icons.notifications_active,
+                          color: Colors.orange),
+                      title: Text(notification['message']),
+                      subtitle: Text(notification['type']),
+                      onTap: () {
+                        print(
+                            'DEBUG: Notification tapped. Type: ${notification['type']}, RelatedId: ${notification['relatedId']}');
+                        // Handle notification click
+                        Navigator.pop(context); // Close the drawer
+                        if (notification['type'] ==
+                            SystemNotification.TYPE_TRANSFER) {
+                          Navigator.pushNamed(
+                            context,
+                            '/transfers/history/:id',
+                            arguments: {
+                              'transferId': notification['relatedId'],
+                            },
+                          );
+                        } else if (notification['type'] ==
+                            SystemNotification.TYPE_ORDER) {
+                          Navigator.pushNamed(
+                            context,
+                            '/orders/history/:id',
+                            arguments: {
+                              'orderId': notification['relatedId'],
+                            },
+                          );
+                        } else {
+                          // Handle other notification types if needed
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Notification: ${notification['message']}')),
+                          );
+                        }
+                      },
+                    );
+                  }).toList(),
+                ],
               ],
             ),
           ],

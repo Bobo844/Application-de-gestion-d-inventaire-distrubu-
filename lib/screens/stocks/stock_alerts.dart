@@ -10,11 +10,13 @@ class StockAlertsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Couleurs personnalisées
     final Color _primaryColor = const Color(0xFF2196F3);
-   // final Color _accentColor = const Color(0xFF64B5F6);
+    // final Color _accentColor = const Color(0xFF64B5F6);
     final Color _backgroundColor = const Color(0xFFF5F5F5);
 
     final lowStockItems = Stock.stockMovements
-        .where((stock) => stock['quantity'] <= stock['threshold'])
+        .where((stock) =>
+            (stock['quantity'] as num? ?? 0) <=
+            (stock['threshold'] as num? ?? 0))
         .toList();
 
     return Scaffold(
@@ -142,7 +144,7 @@ class StockAlertsPage extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${item['quantity']}',
+                                '${item['quantity'] as num? ?? 0}',
                                 style: const TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.bold,
@@ -150,7 +152,7 @@ class StockAlertsPage extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                ' / ${item['threshold']} ',
+                                ' / ${item['threshold'] as num? ?? 0} ',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,

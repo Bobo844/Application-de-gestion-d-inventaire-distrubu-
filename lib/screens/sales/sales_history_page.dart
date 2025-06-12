@@ -23,29 +23,38 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
     // Filtrage par recherche
     if (_searchController.text.isNotEmpty) {
       result = result.where((sale) {
-        return sale['id'].toString().toLowerCase().contains(_searchController.text.toLowerCase()) ||
-            (sale['items'] as List).any((item) =>
-                item['productName'].toString().toLowerCase().contains(_searchController.text.toLowerCase()));
+        return sale['id']
+                .toString()
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase()) ||
+            (sale['items'] as List).any((item) => item['productName']
+                .toString()
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase()));
       }).toList();
     }
 
     // Filtrage par magasin
     if (_selectedStore != null) {
-      result = result.where((sale) => sale['storeId'] == _selectedStore).toList();
+      result =
+          result.where((sale) => sale['storeId'] == _selectedStore).toList();
     }
 
     // Filtrage par vendeur
     if (_selectedSeller != null) {
-      result = result.where((sale) => sale['userId'] == _selectedSeller).toList();
+      result =
+          result.where((sale) => sale['userId'] == _selectedSeller).toList();
     }
 
     // Filtrage par statut
     if (_selectedStatus != 'all') {
-      result = result.where((sale) => sale['status'] == _selectedStatus).toList();
+      result =
+          result.where((sale) => sale['status'] == _selectedStatus).toList();
     }
 
     // Tri par date (plus récent en premier)
-    result.sort((a, b) => DateTime.parse(b['saleDate']).compareTo(DateTime.parse(a['saleDate'])));
+    result.sort((a, b) =>
+        DateTime.parse(b['saleDate']).compareTo(DateTime.parse(a['saleDate'])));
 
     return result;
   }
@@ -134,7 +143,8 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                                     .map((user) {
                                   return DropdownMenuItem(
                                     value: user['id'] as String,
-                                    child: Text('${user['firstName']} ${user['lastName']}'),
+                                    child: Text(
+                                        '${user['firstName']} ${user['lastName']}'),
                                   );
                                 }),
                               ],
@@ -191,9 +201,11 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                 itemCount: sales.length,
                 itemBuilder: (context, index) {
                   final sale = sales[index];
-                  final store = Store.stores.firstWhere((s) => s['id'] == sale['storeId']);
-                  final seller = UserAccount.users.firstWhere((u) => u['id'] == sale['userId']);
-                  
+                  final store = Store.stores
+                      .firstWhere((s) => s['id'] == sale['storeId']);
+                  final seller = UserAccount.users
+                      .firstWhere((u) => u['id'] == sale['userId']);
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
                     child: ExpansionTile(
@@ -201,10 +213,13 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Date: ${dateFormat.format(DateTime.parse(sale['saleDate']))}'),
+                          Text(
+                              'Date: ${dateFormat.format(DateTime.parse(sale['saleDate']))}'),
                           Text('Magasin: ${store['name']}'),
-                          Text('Vendeur: ${seller['firstName']} ${seller['lastName']}'),
-                          Text('Total: ${sale['finalAmount'].toStringAsFixed(2)}'),
+                          Text(
+                              'Vendeur: ${seller['firstName']} ${seller['lastName']}'),
+                          Text(
+                              'Total: ${((sale['finalAmount'] as num?) ?? 0.0).toStringAsFixed(2)}'),
                         ],
                       ),
                       children: [
@@ -221,12 +236,14 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                               ...(sale['items'] as List).map((item) => Padding(
                                     padding: const EdgeInsets.only(left: 16),
                                     child: Text(
-                                      '${item['productName']} - ${item['quantity']} x ${item['unitPrice']} = ${item['totalPrice']}',
+                                      '${item['productName']} - ${((item['quantity'] as int?) ?? 0)} x ${((item['unitPrice'] as num?) ?? 0.0).toStringAsFixed(2)} = ${((item['totalPrice'] as num?) ?? 0.0).toStringAsFixed(2)}',
                                     ),
                                   )),
                               const SizedBox(height: 8),
-                              Text('Remise: ${sale['discount']}'),
-                              Text('Méthode de paiement: ${sale['paymentMethod']}'),
+                              Text(
+                                  'Remise: ${((sale['discount'] as num?) ?? 0.0).toStringAsFixed(2)}'),
+                              Text(
+                                  'Méthode de paiement: ${sale['paymentMethod']}'),
                               Text('Statut: ${sale['status']}'),
                             ],
                           ),

@@ -1,5 +1,20 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/login_page.dart';
+import 'screens/dashboard/dashboard_page.dart';
+import 'screens/products/product_management.dart';
+import 'screens/stores/store_management.dart';
+import 'screens/stocks/stock_alerts.dart';
+import 'screens/stocks/stock_history.dart';
+import 'screens/suppliers/supplier_management.dart';
+import 'screens/orders/supplier_order_list.dart';
+import 'screens/reports/reports_page.dart';
+import 'screens/users/user_management.dart';
+import 'screens/transfers/stock_transfer_form.dart';
+import 'screens/transfers/transfer_history_page.dart';
+import 'screens/sales/new_sale_page.dart';
+import 'screens/sales/sales_history_page.dart';
+import 'screens/sales/sales_stats_page.dart';
+import 'screens/notifications/notifications_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -97,7 +112,35 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: Colors.grey[600]),
         ),
       ),
-      home: const LoginPage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginPage(),
+        '/login': (context) => const LoginPage(),
+        '/products': (context) => const ProductManagementPage(),
+        '/stores': (context) => const StoreManagementPage(),
+        '/stocks': (context) => const StockAlertsPage(),
+        '/stock-history': (context) => const StockHistoryPage(),
+        '/suppliers': (context) => const SupplierManagementPage(),
+        '/orders': (context) => const SupplierOrderListPage(),
+        '/reports': (context) => const ReportsPage(),
+        '/users': (context) => const UserManagementPage(),
+        '/transfers/new': (context) => const StockTransferForm(),
+        '/transfers/history': (context) => const TransferHistoryPage(),
+        '/transfers/history/:id': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
+          return TransferHistoryPage(transferIdToHighlight: args['transferId']);
+        },
+        '/orders/history/:id': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
+          return SupplierOrderListPage(orderIdToHighlight: args['orderId']);
+        },
+        '/sales/new': (context) => const NewSalePage(),
+        '/sales/history': (context) => const SalesHistoryPage(),
+        '/sales/stats': (context) => const SalesStatsPage(),
+        '/notifications': (context) => const NotificationsPage(),
+      },
     );
   }
 }

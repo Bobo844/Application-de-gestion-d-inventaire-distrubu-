@@ -196,7 +196,7 @@ class _StoreManagementPageState extends State<StoreManagementPage> {
                               store['name'],
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 14,
                               ),
                             ),
                             subtitle: Column(

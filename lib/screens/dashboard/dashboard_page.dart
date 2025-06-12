@@ -33,9 +33,11 @@ class _DashboardPageState extends State<DashboardPage> {
             CircleAvatar(
               backgroundColor: _primaryColor.withOpacity(0.1),
               child: Text(
-                currentUser['firstName'][0].toUpperCase(),
+                currentUser['firstName'] != null
+                    ? currentUser['firstName'][0].toUpperCase()
+                    : ' ',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 16,
                   color: _primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -52,15 +54,18 @@ class _DashboardPageState extends State<DashboardPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildInfoRow('Nom d\'utilisateur', currentUser['username']),
+              _buildInfoRow('Nom d\'utilisateur',
+                  currentUser['username'] as String? ?? 'N/A'),
               const SizedBox(height: 8),
-              _buildInfoRow('Prénom', currentUser['firstName']),
+              _buildInfoRow(
+                  'Prénom', currentUser['firstName'] as String? ?? 'N/A'),
               const SizedBox(height: 8),
-              _buildInfoRow('Nom', currentUser['lastName']),
+              _buildInfoRow('Nom', currentUser['lastName'] as String? ?? 'N/A'),
               const SizedBox(height: 8),
-              _buildInfoRow('Email', currentUser['email']),
+              _buildInfoRow('Email', currentUser['email'] as String? ?? 'N/A'),
               const SizedBox(height: 8),
-              _buildInfoRow('Rôle', _getRoleLabel(currentUser['role'])),
+              _buildInfoRow('Rôle',
+                  _getRoleLabel(currentUser['role'] as String? ?? 'N/A')),
             ],
           ),
         ),
@@ -82,24 +87,28 @@ class _DashboardPageState extends State<DashboardPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          flex: 1,
+          flex: 2,
           child: Text(
-            '$label : ',
+            label,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.grey,
               fontSize: 13.0,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 3,
           child: Text(
-            value,
+            ': $value',
             style: const TextStyle(
               color: Colors.black87,
               fontSize: 13.0,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -212,7 +221,9 @@ class _DashboardPageState extends State<DashboardPage> {
     final totalStores = Store.stores.length;
     final totalProducts = Product.products.length;
     final lowStockProducts = Stock.stockMovements
-        .where((stock) => stock['quantity'] <= stock['threshold'])
+        .where((stock) =>
+            (stock['quantity'] as num? ?? 0) <=
+            (stock['threshold'] as num? ?? 0))
         .length;
 
     return Scaffold(
@@ -234,9 +245,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   CircleAvatar(
                     backgroundColor: Colors.white,
                     child: Text(
-                      currentUser['firstName'][0].toUpperCase(),
+                      currentUser['firstName'] != null
+                          ? currentUser['firstName'][0].toUpperCase()
+                          : ' ',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         color: _primaryColor,
                         fontWeight: FontWeight.bold,
                       ),

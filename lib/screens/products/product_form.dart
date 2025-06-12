@@ -140,7 +140,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
         'id': widget.product?['id'] ?? DateTime.now().toString(),
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
-        'price': double.parse(_priceController.text),
+        'price': double.tryParse(_priceController.text) ?? 0.0,
         'sku': _skuController.text.trim(),
         'category': _selectedCategory,
         'unit': _selectedUnit,
@@ -157,8 +157,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
             'id': DateTime.now().toString(),
             'storeId': _selectedStore,
             'productName': productData['name'],
-            'quantity': int.parse(_initialStockController.text),
-            'threshold': int.parse(_stockThresholdController.text),
+            'quantity': int.tryParse(_initialStockController.text) ?? 0,
+            'threshold': int.tryParse(_stockThresholdController.text) ?? 0,
             'unit': productData['unit'],
             'lastUpdate': DateTime.now().toIso8601String(),
           };
@@ -171,7 +171,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             'storeId': _selectedStore,
             'productName': productData['name'],
             'type': StockMovementType.entry.name,
-            'quantity': int.parse(_initialStockController.text),
+            'quantity': int.tryParse(_initialStockController.text) ?? 0,
             'date': DateTime.now().toIso8601String(),
             'reason': 'Stock initial',
           });

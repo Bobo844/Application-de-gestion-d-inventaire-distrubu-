@@ -294,11 +294,8 @@ class _StockHistoryPageState extends State<StockHistoryPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Quantité: ${movement['quantity']} - ${movement['reason']}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
+                            'Quantité: ${(movement['quantity'] as num? ?? 0)}',
+                            style: TextStyle(color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 4),
                           Text(

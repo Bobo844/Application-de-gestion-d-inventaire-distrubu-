@@ -74,12 +74,12 @@ class Transfer {
         case STATUS_APPROVED:
           notificationTitle = 'Transfert approuvé';
           notificationMessage =
-              'Votre demande de transfert a été approuvée par ${_getUserName(approvedBy!)}';
+              'Votre demande de transfert a été approuvée par ${_getUserName(approvedBy ?? 'un administrateur inconnu')}';
           break;
         case STATUS_REJECTED:
           notificationTitle = 'Transfert refusé';
           notificationMessage =
-              'Votre demande de transfert a été refusée par ${_getUserName(approvedBy!)}';
+              'Votre demande de transfert a été refusée par ${_getUserName(approvedBy ?? 'un administrateur inconnu')}';
           break;
         case STATUS_COMPLETED:
           notificationTitle = 'Transfert complété';
@@ -100,46 +100,82 @@ class Transfer {
       // Si le transfert est approuvé, effectuer le transfert de stock
       if (newStatus == STATUS_APPROVED) {
         final items = transfer['items'] as List<Map<String, dynamic>>;
-
+        // Effectuer le transfert de stock sans modifier l'état de l'utilisateur
         for (var item in items) {
           // Vérifier le stock disponible dans le magasin source
-          final sourceStockIndex = Stock.stockMovements.indexWhere(
+          final fromStockIndex = Stock.stockMovements.indexWhere(
             (stock) =>
                 stock['storeId'] == transfer['fromStoreId'] &&
-                stock['productName'] == item['productName'],
+                stock['productName'] == (item['productName'] as String?),
           );
 
-          if (sourceStockIndex != -1 &&
-              Stock.stockMovements[sourceStockIndex]['quantity'] >=
-                  item['quantity']) {
-            // Déduire le stock du magasin source
-            Stock.stockMovements[sourceStockIndex]['quantity'] -=
-                item['quantity'];
-            Stock.stockMovements[sourceStockIndex]['lastUpdate'] =
-                DateTime.now().toIso8601String();
+          if (fromStockIndex != -1) {
+            final currentQuantity =
+                (Stock.stockMovements[fromStockIndex]['quantity'] as num?) ?? 0;
+            final transferQuantity = (item['quantity'] as num?) ?? 0;
 
-            // Ajouter le stock au magasin destination
-            final destStockIndex = Stock.stockMovements.indexWhere(
-              (stock) =>
-                  stock['storeId'] == transfer['toStoreId'] &&
-                  stock['productName'] == item['productName'],
-            );
-
-            if (destStockIndex != -1) {
-              Stock.stockMovements[destStockIndex]['quantity'] +=
-                  item['quantity'];
-              Stock.stockMovements[destStockIndex]['lastUpdate'] =
+            if (currentQuantity >= transferQuantity) {
+              // Diminuer le stock du magasin source
+              Stock.stockMovements[fromStockIndex]['quantity'] =
+                  currentQuantity - transferQuantity;
+              Stock.stockMovements[fromStockIndex]['lastUpdate'] =
                   DateTime.now().toIso8601String();
-            } else {
-              // Créer un nouveau mouvement de stock pour le magasin destination
-              Stock.stockMovements.add({
-                'storeId': transfer['toStoreId'],
-                'productName': item['productName'],
-                'quantity': item['quantity'],
-                'unit': item['unit'],
-                'lastUpdate': DateTime.now().toIso8601String(),
+
+              // Augmenter le stock du magasin destinataire
+              final toStockIndex = Stock.stockMovements.indexWhere(
+                (stock) =>
+                    stock['storeId'] == transfer['toStoreId'] &&
+                    stock['productName'] == (item['productName'] as String?),
+              );
+
+              if (toStockIndex != -1) {
+                Stock.stockMovements[toStockIndex]['quantity'] =
+                    ((Stock.stockMovements[toStockIndex]['quantity'] as num?) ??
+                            0) +
+                        transferQuantity;
+                Stock.stockMovements[toStockIndex]['lastUpdate'] =
+                    DateTime.now().toIso8601String();
+              } else {
+                // Si le produit n'existe pas dans le magasin destinataire, l'ajouter
+                Stock.stockMovements.add({
+                  'id': DateTime.now().toString(),
+                  'storeId': transfer['toStoreId'],
+                  'productName': item['productName'] as String? ?? 'N/A',
+                  'quantity': transferQuantity,
+                  'threshold': 0, // Valeur par défaut
+                  'unit': item['unit'] as String? ?? 'N/A',
+                  'lastUpdate': DateTime.now().toIso8601String(),
+                });
+              }
+
+              // Ajouter les mouvements de stock à l'historique
+              Stock.movements.add({
+                'id': DateTime.now().toString(),
+                'storeId': transfer['fromStoreId'],
+                'productName': item['productName'] as String? ?? 'N/A',
+                'type': StockMovementType.transfer.name,
+                'quantity': transferQuantity,
+                'date': DateTime.now().toIso8601String(),
+                'reason': 'Transfert sortant',
               });
+              Stock.movements.add({
+                'id': DateTime.now().toString(),
+                'storeId': transfer['toStoreId'],
+                'productName': item['productName'] as String? ?? 'N/A',
+                'type': StockMovementType.transfer.name,
+                'quantity': transferQuantity,
+                'date': DateTime.now().toIso8601String(),
+                'reason': 'Transfert entrant',
+              });
+            } else {
+              // Gérer le cas où le stock est insuffisant
+              print(
+                  'Stock insuffisant pour le produit ${item['productName']} dans le magasin source.');
             }
+          } else {
+            // Gérer le cas où le produit n'est pas trouvé dans le stock du magasin source
+            print(
+                'Produit ${item['productName']} non trouvé dans le stock du magasin source.');
           }
         }
 
@@ -150,10 +186,20 @@ class Transfer {
   }
 
   static String _getUserName(String userId) {
+    print('DEBUG: _getUserName called with userId: $userId');
     final user = UserAccount.users.firstWhere(
       (u) => u['id'] == userId,
-      orElse: () => {'firstName': 'Utilisateur', 'lastName': 'Inconnu'},
+      orElse: () => {},
     );
-    return '${user['firstName']} ${user['lastName']}';
+    // Safely access properties, provide default empty string if user map is empty or properties are null
+    final firstName = user['firstName'] as String? ?? '';
+    final lastName = user['lastName'] as String? ?? '';
+
+    print('DEBUG: User found - firstName: $firstName, lastName: $lastName');
+
+    if (firstName.isEmpty && lastName.isEmpty) {
+      return 'Utilisateur Inconnu'; // Return a default name if no user or name found
+    }
+    return '$firstName $lastName';
   }
 }

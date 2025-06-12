@@ -21,7 +21,11 @@ class Sale {
       final stockIndex = Stock.stockMovements.indexWhere(
         (stock) => stock['productName'] == item['productName'],
       );
-      if (stockIndex == -1 || Stock.stockMovements[stockIndex]['quantity'] < item['quantity']) {
+      final itemQuantity = (item['quantity'] as num?) ?? 0;
+
+      if (stockIndex == -1 ||
+          ((Stock.stockMovements[stockIndex]['quantity'] as num?) ?? 0) <
+              itemQuantity) {
         throw Exception('Stock insuffisant pour ${item['productName']}');
       }
     }
@@ -46,9 +50,13 @@ class Sale {
       final stockIndex = Stock.stockMovements.indexWhere(
         (stock) => stock['productName'] == item['productName'],
       );
+      final itemQuantity = (item['quantity'] as num?) ?? 0;
       if (stockIndex != -1) {
-        Stock.stockMovements[stockIndex]['quantity'] -= item['quantity'] as int;
-        Stock.stockMovements[stockIndex]['lastUpdate'] = DateTime.now().toIso8601String();
+        Stock.stockMovements[stockIndex]['quantity'] =
+            ((Stock.stockMovements[stockIndex]['quantity'] as num?) ?? 0) -
+                itemQuantity;
+        Stock.stockMovements[stockIndex]['lastUpdate'] =
+            DateTime.now().toIso8601String();
       }
     }
     return sale;
@@ -66,9 +74,13 @@ class Sale {
           final stockIndex = Stock.stockMovements.indexWhere(
             (stock) => stock['productName'] == item['productName'],
           );
+          final itemQuantity = (item['quantity'] as num?) ?? 0;
           if (stockIndex != -1) {
-            Stock.stockMovements[stockIndex]['quantity'] += item['quantity'] as int;
-            Stock.stockMovements[stockIndex]['lastUpdate'] = DateTime.now().toIso8601String();
+            Stock.stockMovements[stockIndex]['quantity'] =
+                ((Stock.stockMovements[stockIndex]['quantity'] as num?) ?? 0) +
+                    itemQuantity;
+            Stock.stockMovements[stockIndex]['lastUpdate'] =
+                DateTime.now().toIso8601String();
           }
         }
       }
@@ -78,7 +90,7 @@ class Sale {
   // Méthode pour obtenir les statistiques de ventes par magasin
   static Map<String, Map<String, dynamic>> getSalesByStore() {
     Map<String, Map<String, dynamic>> storeStats = {};
-    
+
     for (var sale in sales) {
       final storeId = sale['storeId'];
       if (!storeStats.containsKey(storeId)) {
@@ -88,27 +100,29 @@ class Sale {
           'items': {},
         };
       }
-      
-      storeStats[storeId]!['totalSales'] += sale['finalAmount'];
+
+      storeStats[storeId]!['totalSales'] +=
+          (sale['finalAmount'] as num?) ?? 0.0;
       storeStats[storeId]!['numberOfSales']++;
-      
+
       // Compter les produits vendus
       for (var item in sale['items']) {
         final productName = item['productName'];
         if (!storeStats[storeId]!['items'].containsKey(productName)) {
           storeStats[storeId]!['items'][productName] = 0;
         }
-        storeStats[storeId]!['items'][productName] += item['quantity'];
+        storeStats[storeId]!['items'][productName] +=
+            (item['quantity'] as num?) ?? 0;
       }
     }
-    
+
     return storeStats;
   }
 
   // Méthode pour obtenir les statistiques de ventes par vendeur
   static Map<String, Map<String, dynamic>> getSalesBySeller() {
     Map<String, Map<String, dynamic>> sellerStats = {};
-    
+
     for (var sale in sales) {
       final userId = sale['userId'];
       if (!sellerStats.containsKey(userId)) {
@@ -118,20 +132,22 @@ class Sale {
           'items': {},
         };
       }
-      
-      sellerStats[userId]!['totalSales'] += sale['finalAmount'];
+
+      sellerStats[userId]!['totalSales'] +=
+          (sale['finalAmount'] as num?) ?? 0.0;
       sellerStats[userId]!['numberOfSales']++;
-      
+
       // Compter les produits vendus
       for (var item in sale['items']) {
         final productName = item['productName'];
         if (!sellerStats[userId]!['items'].containsKey(productName)) {
           sellerStats[userId]!['items'][productName] = 0;
         }
-        sellerStats[userId]!['items'][productName] += item['quantity'];
+        sellerStats[userId]!['items'][productName] +=
+            (item['quantity'] as num?) ?? 0;
       }
     }
-    
+
     return sellerStats;
   }
 }

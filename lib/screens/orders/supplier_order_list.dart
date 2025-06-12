@@ -5,7 +5,9 @@ import '../../models/supplier.dart';
 import 'supplier_order_form.dart';
 
 class SupplierOrderListPage extends StatefulWidget {
-  const SupplierOrderListPage({super.key});
+  final String? orderIdToHighlight;
+
+  const SupplierOrderListPage({super.key, this.orderIdToHighlight});
 
   @override
   _SupplierOrderListPageState createState() => _SupplierOrderListPageState();
@@ -18,8 +20,24 @@ class _SupplierOrderListPageState extends State<SupplierOrderListPage> {
 
   // Couleurs personnalisées
   final Color _primaryColor = const Color(0xFF2196F3);
- // final Color _accentColor = const Color(0xFF64B5F6);
+  // final Color _accentColor = const Color(0xFF64B5F6);
   final Color _backgroundColor = const Color(0xFFF5F5F5);
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.orderIdToHighlight != null) {
+      // Scroll to the highlighted order
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final index = SupplierOrder.orders.indexWhere(
+          (order) => order['id'] == widget.orderIdToHighlight,
+        );
+        if (index != -1) {
+          // TODO: Implement scrolling to the highlighted order
+        }
+      });
+    }
+  }
 
   List<Map<String, dynamic>> get filteredOrders {
     List<Map<String, dynamic>> result = List.from(SupplierOrder.orders);
@@ -50,7 +68,7 @@ class _SupplierOrderListPageState extends State<SupplierOrderListPage> {
         return Colors.grey;
       case SupplierOrder.STATUS_PENDING:
         return Colors.orange;
-      case SupplierOrder.STATUS_RECEIVED:
+      case SupplierOrder.STATUS_COMPLETED:
         return Colors.green;
       case SupplierOrder.STATUS_CANCELLED:
         return Colors.red;
@@ -65,7 +83,7 @@ class _SupplierOrderListPageState extends State<SupplierOrderListPage> {
         return 'Brouillon';
       case SupplierOrder.STATUS_PENDING:
         return 'En attente';
-      case SupplierOrder.STATUS_RECEIVED:
+      case SupplierOrder.STATUS_COMPLETED:
         return 'Reçue';
       case SupplierOrder.STATUS_CANCELLED:
         return 'Annulée';
@@ -232,9 +250,9 @@ class _SupplierOrderListPageState extends State<SupplierOrderListPage> {
                             ),
                           ),
                           DropdownMenuItem(
-                            value: SupplierOrder.STATUS_RECEIVED,
+                            value: SupplierOrder.STATUS_COMPLETED,
                             child: Text(
-                              _getStatusLabel(SupplierOrder.STATUS_RECEIVED),
+                              _getStatusLabel(SupplierOrder.STATUS_COMPLETED),
                               style: TextStyle(color: Colors.grey[800]),
                             ),
                           ),
@@ -370,7 +388,7 @@ class _SupplierOrderListPageState extends State<SupplierOrderListPage> {
                                 ),
                               ),
                               if (order['status'] !=
-                                      SupplierOrder.STATUS_RECEIVED &&
+                                      SupplierOrder.STATUS_COMPLETED &&
                                   order['status'] !=
                                       SupplierOrder.STATUS_CANCELLED)
                                 PopupMenuItem(
@@ -434,13 +452,13 @@ class _SupplierOrderListPageState extends State<SupplierOrderListPage> {
             if (order['status'] == SupplierOrder.STATUS_PENDING) ...[
               ListTile(
                 title: Text(
-                  _getStatusLabel(SupplierOrder.STATUS_RECEIVED),
+                  _getStatusLabel(SupplierOrder.STATUS_COMPLETED),
                   style: TextStyle(color: Colors.grey[800]),
                 ),
                 onTap: () {
                   SupplierOrder.updateOrderStatus(
                     order['id'],
-                    SupplierOrder.STATUS_RECEIVED,
+                    SupplierOrder.STATUS_COMPLETED,
                   );
                   setState(() {});
                   Navigator.pop(context);

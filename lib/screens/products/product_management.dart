@@ -456,7 +456,8 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
           // Calculer le stock par magasin
           for (var stock in Stock.stockMovements) {
             if (stock['productName'] == product['name']) {
-              stockByStore[stock['storeId']] = stock['quantity'] as int;
+              stockByStore[stock['storeId']] =
+                  (stock['quantity'] as num? ?? 0).toInt();
             }
           }
 

@@ -25,7 +25,7 @@ class _SalesStatsPageState extends State<SalesStatsPage> {
 
   String _getSellerFullName(String? sellerId) {
     if (sellerId == null) return 'Vendeur inconnu';
-    
+
     final seller = UserAccount.users.firstWhere(
       (user) => user['id'] == sellerId,
       orElse: () => {
@@ -33,7 +33,7 @@ class _SalesStatsPageState extends State<SalesStatsPage> {
         'lastName': 'inconnu',
       },
     );
-    
+
     return '${seller['firstName'] ?? 'Vendeur'} ${seller['lastName'] ?? 'inconnu'}';
   }
 
@@ -66,27 +66,32 @@ class _SalesStatsPageState extends State<SalesStatsPage> {
     double totalSales = 0.0;
     int numberOfSales = 0;
     double averageSale = 0.0;
-    Map<String, int> productCount = {};
+    Map<String, num> productCount = {};
     String bestProduct = 'Aucun';
 
     try {
       final filteredSales = _selectedSellerId != null
-          ? sales.where((sale) => sale['sellerId'] == _selectedSellerId).toList()
+          ? sales
+              .where((sale) => sale['sellerId'] == _selectedSellerId)
+              .toList()
           : sales;
 
       totalSales = filteredSales.fold(
-          0.0, (sum, sale) => sum + (sale['finalAmount'] ?? 0.0));
+          0.0, (sum, sale) => sum + ((sale['finalAmount'] as num?) ?? 0.0));
       numberOfSales = filteredSales.length;
       averageSale = numberOfSales > 0 ? totalSales / numberOfSales : 0.0;
 
       // Produit le plus vendu
       for (var sale in filteredSales) {
-        if (sale['items'] != null) {
-          for (var item in (sale['items'] as List)) {
-            if (item['productName'] != null && item['quantity'] != null) {
-              productCount[item['productName']] =
-                  (productCount[item['productName']] ?? 0) +
-                      ((item['quantity'] ?? 0) as int);
+        if (sale['items'] is List) {
+          for (var item
+              in (sale['items'] as List).cast<Map<String, dynamic>>()) {
+            final productName = item['productName'] as String?;
+            final quantity = (item['quantity'] as num?) ?? 0;
+
+            if (productName != null) {
+              productCount[productName] =
+                  (productCount[productName] ?? 0) + quantity;
             }
           }
         }

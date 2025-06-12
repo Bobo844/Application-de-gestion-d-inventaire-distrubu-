@@ -43,17 +43,20 @@ class _NewSalePageState extends State<NewSalePage> {
         return;
       }
 
-      if (Stock.stockMovements[stockIndex]['quantity'] < quantity) {
+      final currentStockQuantity =
+          (Stock.stockMovements[stockIndex]['quantity'] as num?) ?? 0;
+
+      if (currentStockQuantity < quantity) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Stock insuffisant. Disponible: ${Stock.stockMovements[stockIndex]['quantity']}'),
+            content:
+                Text('Stock insuffisant. Disponible: ${currentStockQuantity}'),
           ),
         );
         return;
       }
 
-      final double price = product['price'] as double;
+      final double price = (product['price'] as num?)?.toDouble() ?? 0.0;
       final double itemTotal = quantity * price;
       setState(() {
         items.add({

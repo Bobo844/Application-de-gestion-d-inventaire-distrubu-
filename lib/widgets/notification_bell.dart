@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/notification.dart';
 import 'package:intl/intl.dart';
+import '../screens/transfers/transfer_history_page.dart';
 
 class NotificationBell extends StatefulWidget {
   final String userId;
@@ -20,54 +21,71 @@ class _NotificationBellState extends State<NotificationBell> {
   final DateFormat _dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
   void _showNotifications() {
-    final notifications = SystemNotification.getNotifications(widget.userId);
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Notifications'),
         content: SizedBox(
           width: double.maxFinite,
-          child: notifications.isEmpty
-              ? const Center(
+          child: StreamBuilder<List<Map<String, dynamic>>>(
+            stream: SystemNotification.getNotificationsStream(widget.userId),
+            builder: (context, snapshot) {
+              final notifications = snapshot.data ?? [];
+              if (notifications.isEmpty) {
+                return const Center(
                   child: Text('Aucune notification non lue'),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = notifications[index];
-                    return ListTile(
-                      leading: Icon(
-                        _getNotificationIcon(notification['type'] as String),
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      title: Text(notification['title'] as String),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(notification['message'] as String),
-                          Text(
-                            _dateFormat
-                                .format(DateTime.parse(notification['date'] as String)),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
+                );
+              }
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  return ListTile(
+                    leading: Icon(
+                      _getNotificationIcon(
+                          notification['type'] as String? ?? 'unknown'),
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    title: Text(notification['title'] as String? ?? 'N/A'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(notification['message'] as String? ?? 'N/A'),
+                        Text(
+                          _dateFormat.format(DateTime.parse(
+                              notification['date'] as String? ??
+                                  DateTime.now().toIso8601String())),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
                           ),
-                        ],
-                      ),
-                      onTap: () {
-                        SystemNotification.markAsRead(notification['id'] as String);
-                        setState(() {});
-                        Navigator.pop(context);
-                        if (widget.onNotificationTap != null) {
-                          widget.onNotificationTap!();
-                        }
-                      },
-                    );
-                  },
-                ),
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      SystemNotification.markAsRead(
+                          notification['id'] as String? ?? '');
+                      setState(() {});
+                      Navigator.pop(context);
+                      if ((notification['type'] as String? ?? '') ==
+                          SystemNotification.TYPE_TRANSFER) {
+                        Navigator.pushNamed(
+                          context,
+                          '/transfers/history/:id',
+                          arguments: {
+                            'transferId': notification['relatedId'],
+                          },
+                        );
+                      } else if (widget.onNotificationTap != null) {
+                        widget.onNotificationTap!();
+                      }
+                    },
+                  );
+                },
+              );
+            },
+          ),
         ),
         actions: [
           TextButton(

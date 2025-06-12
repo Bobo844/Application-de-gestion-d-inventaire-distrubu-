@@ -49,7 +49,7 @@ class _SupplierOrderFormState extends State<SupplierOrderForm> {
               'productName': product['name'],
               'quantity': quantity,
               'price': price,
-              'total': quantity * price,
+              'total': (quantity as num? ?? 0.0) * (price as num? ?? 0.0),
             });
           });
         },
@@ -58,7 +58,8 @@ class _SupplierOrderFormState extends State<SupplierOrderForm> {
   }
 
   double _calculateTotal() {
-    return _orderLines.fold(0, (sum, line) => sum + (line['total'] as double));
+    return _orderLines.fold(
+        0.0, (sum, line) => sum + ((line['total'] as num?) ?? 0.0));
   }
 
   @override
@@ -136,7 +137,7 @@ class _SupplierOrderFormState extends State<SupplierOrderForm> {
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.1),

@@ -58,7 +58,7 @@ class _StockMovementFormState extends State<StockMovementForm> {
 
       if (stockIndex != -1) {
         Stock.stockMovements[stockIndex]['quantity'] =
-            (Stock.stockMovements[stockIndex]['quantity'] as int) +
+            ((Stock.stockMovements[stockIndex]['quantity'] as num?) ?? 0) +
                 finalQuantity;
         Stock.stockMovements[stockIndex]['lastUpdate'] =
             DateTime.now().toIso8601String();
@@ -68,7 +68,7 @@ class _StockMovementFormState extends State<StockMovementForm> {
           'storeId': _selectedStore,
           'productName': _selectedProduct,
           'quantity': quantity,
-          'threshold': 5, // Valeur par défaut
+          'threshold': 5,
           'unit': product['unit'],
           'lastUpdate': DateTime.now().toIso8601String(),
         });

@@ -51,7 +51,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
     for (var movement in _filteredMovements) {
       final productName = movement['productName'];
-      final quantity = movement['quantity'] as int;
+      final quantity = ((movement['quantity'] as num?) ?? 0).toInt();
       final type = movement['type'];
 
       stockByProduct[productName] = (stockByProduct[productName] ?? 0) +
@@ -61,8 +61,8 @@ class _ReportsPageState extends State<ReportsPage> {
         (p) => p['name'] == productName,
         orElse: () => {'price': 0.0},
       );
-      valueByProduct[productName] =
-          (stockByProduct[productName] ?? 0) * (product['price'] as double);
+      valueByProduct[productName] = (stockByProduct[productName] ?? 0) *
+          ((product['price'] as num?)?.toDouble() ?? 0.0);
     }
 
     return Column(
@@ -263,7 +263,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       Text(
-                        'Quantité: ${movement['quantity']}',
+                        'Quantité: ${(movement['quantity'] as num? ?? 0)}',
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       Text(
@@ -285,7 +285,7 @@ class _ReportsPageState extends State<ReportsPage> {
     final totalOrders = _filteredOrders.length;
     final totalValue = _filteredOrders.fold<double>(
       0,
-      (sum, order) => sum + (order['total'] as double),
+      (sum, order) => sum + ((order['total'] as num?)?.toDouble() ?? 0.0),
     );
 
     return Column(
